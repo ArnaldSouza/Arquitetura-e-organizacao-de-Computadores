@@ -1,0 +1,208 @@
+Emuladores: spim, Mars
+
+------------------- Exercício 1 -------------------
+
+ int a = 3;
+    int b = 4;
+    int m = 10;
+    m = a;
+    if ( b < m )
+        m = b;
+   
+    printf("%i", m);           
+
+===========================
+.data
+
+.text
+
+
+main:
+	addi $t0,$zero,3	# a = 3
+	addi $t1,$zero,4	# b = 4
+	addi $t2,$zero,10	# m = 10
+
+	add $t2,$zero,$t0	# m = a
+
+	slt $s0, $t1, $t2	# se (b < m) $s0 = 1 senão $s0 = 0 
+	beq $s0, $zero, SAIR	# salta para SAIR se $s0 = 0
+
+	add $t2, $zero, $t1	# m = b
+	#move $t2, $t1		# colocar t2 em t1 "M RECEBE B"      
+
+
+SAIR: 
+	
+	addi $v0, $zero, 1      # o numero 1 é a chamada do sistema para imprimir um inteiro
+	addi $a0, $zero, $t2	# $a0 local onde vai colocar o que vai ser impresso, nesse caso $t2 (m)
+	syscall			# chama o sistema
+
+	addi $v0, $zero, 10	# o numero 10 é a chamada do sistema para sair do programa
+	syscall			# chama o sistema
+
+------------------- Exercício 2 -------------------
+
+
+int a = 2;
+    int b = 10;
+    x = 0;
+    if ( a >= 0 && b <= 50 )
+         x = 1;
+    printf("%i", x);
+
+===========================
+
+.data
+
+.text
+
+
+main:
+	addi $t0,$zero,2	# a = 2
+	addi $t1,$zero,10	# b = 10
+	addi $t2,$zero,$zero	# x = 0 
+	
+	slt $s0, $t0, $zero	#compara se a($t0) é menor que zero se for atribui 0 para $s0, senão $s0 = 1
+	bne $s0, $zero, SAIR	#se for igual a zero continua a execução normal, se for igual a 1 vai para a lable SAIR
+	
+	addi $t3, $zero, 50	#atribui ao registrador $t3 o valor de 50
+		
+	beq $t1, $t3, IF	#compara se b = 50, se sim ele salta para a lable IF
+	
+	slti $s0, $t1, 50	#compara se b é menor que 50, se sim: $s0 = 1, se não: $s0 = 0	
+	beq $s0, $zero, SAIR	#se não for menor que 50 ($s0 = 0) salta para SAIR
+
+IF:
+	addi $t2, $zero, 1 	#x recebe 1
+	
+
+SAIR:
+	addi $v0, $zero, 1	# o numero 1 é a chamada do sistema para imprimir um inteiro
+	add $a0, $zero, $t2	# $a0 local onde vai colocar o que vai ser impresso, nesse caso $t2 (x)
+	syscall			# chama o sistema
+	
+	addi $v0, $zero, 10	# o numero 10 é a chamada do sistema para sair do programa
+	syscall			# chama o sistema
+
+
+------------------- Exercício 3 -------------------
+
+
+	addi $t0,$zero,$zero	# i = 0
+	addi $t1,$zero,10	# j = 10
+	addi $t2,$zero,$zero	# k = 0 
+
+
+WHILE: 
+	
+	slt $s0, $t0, $t1	# compara se i é menor que j 
+	beq $s0, $zero, SAIR	# se não for salta para sair
+	
+	addi $t0, $t0, 1	# adiciona 1 em i
+	addi $t2, $t2, 10	# adiciona 10 em k
+
+	j WHILE			# volta para o começo do laço novamente para fazer as comparações	
+
+SAIR:
+
+	addi $v0, $zero, 1	# o numero 1 é a chamada do sistema para imprimir um inteiro
+	add $a0, $zero, $t0	# $a0 local onde vai colocar o que vai ser impresso, nesse caso $t0 (i)
+	syscall			# chama o sistema
+		
+	add $a0, $zero, $t2	# $a0 local onde vai colocar o que vai ser impresso, nesse caso $t2 (k)
+	syscall			# chama o sistema
+	
+	addi $v0, $zero, 10 	# o numero 10 é a chamada do sistema para sair do programa
+	syscall			# chama o sistema
+
+	
+------------------- Exercício 4 -------------------
+
+.data
+
+	linha: .asciiz "\n\n"
+
+
+.text
+
+
+
+
+main:		# atribui a cada registrador uma variáveç
+	add $t0, $zero, $zero		# fat = 0
+	addi $t1, $zero, 5		# n = 5
+
+	addi $t3, $zero, 1		# 1
+
+	addi $t0, $zero, 1		# fat = 1
+
+LOOP:		# enquanto n for maior ou igual a 1 ele fica no loop									
+	slti  $s0, $t1, 1		#compara se n é menor que 1         
+        bne $s0, $zero, SAIR		#se for menor que 1 sai do LOOP	
+        beq $t1, $t3, SAIR          	# se n == 1sai do LOOP
+       
+        add $t4, $zero, $t1         	#aux = n
+        add $t5, $zero, $t0         	#aux2 = fat
+        
+
+
+    MULT:                     #Rotina de multiplicação n*fat
+       
+        addi $t4, $t4, -1             	#aux --
+        beq $t4, $zero, SUB       	# se aux == 0   faz n-- e volta p loop
+        add $t0,$t0, $t5                #fat = fat+fat
+        j MULT				#pula para o começo novamente			
+       
+
+    SUB: 		      
+        addi $t1,$t1, -1		#Decrementa o valor de n
+        j LOOP				#salta pata o LOOP para continuar
+
+
+    SAIR:
+        addi $v0,$zero, 1		# o numero 1 é a chamada do sistema para imprimir um inteiro
+        add  $a0, $zero, $t0		# $a0 local onde vai colocar o que vai ser impresso, nesse caso $t0 (fat)
+        syscall				# chama o sistema
+   
+        addi $v0,$zero, 4		# o numero 4 é a chamada do sistema para imprimir uma string
+        la  $a0, linha			# $a0 local onde vai colocar o que vai ser impresso, nesse caso linha que é uma string terminada em caracter nulo	
+        syscall				# chama o sistema
+
+        addi $v0,$zero, 1		# o numero 1 é a chamada do sistema para imprimir um inteiro	
+        add  $a0, $zero, $t1		# $a0 local onde vai colocar o que vai ser impresso, nesse caso $t1 (n)
+        syscall				# chama o sistema
+
+------------------- Exercício 4 -------------------
+
+b) O exercício anterior caracteriza o cálculo de um número fatorial.
+
+------------------- Exercício 5 -------------------
+
+Adicione os seguintes dados: 100, 200, 300, 400, 500. Dê um valor inicial de endereçamento para os dados, e armazene adequadamente
+
+addi $t0, $zero, 100
+addi $t1, $zero, 200
+addi $t2, $zero, 300
+addi $t3, $zero, 400
+addi $t4, $zero, 500
+
+a) Somar 50 ao conteúdo da célula, com o valor 300,  e armazene na memória sem causar a perda dos outros dados.
+
+addi $t2, $t2, 50
+
+b) Troque conteúdo da célula com valor 200, pelo conteúdo da celulá com valor 500. 
+
+addi $t1, $zero, 500
+addi $t4, $zero, 200
+
+c) Imprima o conteúdo da célula com o valor 400
+
+addi $v0, $zero, 1
+add $a0, $zero, $t3
+syscall
+
+------------------- Exercício 6 -------------------
+
+ addi $v0,$zero, 1		# atribui 1 ao registrador v0, para exibir o valor final de um inteiro
+ add  $a0, $zero, $t0		# que nesse caso é o valor guardado no registrador $t0, que será exibido
+ syscall			# faz a chamada do sistema

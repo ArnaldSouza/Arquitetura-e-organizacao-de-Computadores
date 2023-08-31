@@ -1,0 +1,116 @@
+	.data
+	MSG: "\n\n A resposta para folha é: \n\n "    #endereço para exibir mensagem
+
+
+	.text
+
+   main:
+	
+	jal folha 	
+	li $a0, 1	#(load immediate) carrega um inteiro dentro do registrador
+	li $a1, 2
+	li $a2, 3
+	li $a3, 4
+
+	jal folha	# $ra = $pc+4 antes de saltar / $ra = este endereço + 4
+		
+	j sair		#salta para sair
+
+   folha:
+
+	addi $sp, $sp , -12	#alocar na pilha espaço de 12 bytes para armazenar os valores do registradores
+	sw $t1, 8($sp)		#salva o conteudo de $t1 dentro da pilha, com deslocamento 8
+	sw $t0, 4($sp)		#salva o conteudo de $t0 dentro da pilha, com deslocamento 4
+	sw $s0, 0($sp)		#salva o conteudo de $s0 dentro da pilha, sem deslocamento
+	
+	add $t0, $a0, $a1	#t0 = g + h
+	add $t1, $a2, $a3	#t1 = i + j
+	sub $s0, $t0, $t1	#f = (g+h) - (i+j)
+	
+	move $v0, $s0		#colocar os valor de $s0 em $v0, pois é em $v0 onde armazena os valores para fazer o retorno de valores da função
+	
+	lw $t1, 8($sp)		#carrega os valores para a pilha novamente
+	lw $t0, 4($sp)
+	lw $s0, 0($sp)		
+	
+	addi $sp, $sp, 12	#soma 12 para o valor da pilha voltar para onde estava
+
+	jr $ra			#jump register , salta para o segundo jal
+
+   sair:
+
+	move $s1, $v0		#coloca os valor de $v0 em $s1
+		
+	la, $a0, MSG		#(load address), carrega o endereço de MSG dentro de $a0
+	li $v0, 4		#faz a chamada nº 4 que é para imprimir uma string		
+	syscall			#chama o sistema
+	
+	move $a0, $s1		#colocar os valor de $s1 em $a0
+	li $v0, 1		#faz a chamada nº 1 que é para imprimir um inteiro
+	syscall			#chama o sistema
+
+	li $v0, 10		#faz a chamada 10 que é para sair do sistema
+	syscall			#chama o sistema
+
+---------------------------------------------
+
+.data
+
+	MSG: "\n\n A resposta para o fatorial é: \n\n "
+.text
+     
+
+main:
+
+    addi $a0, $zero, 5		#n = 5
+    jal FACT			#pula para FACT
+    j SAIR			#pula para SAIR
+
+FACT:
+
+    #Salvando os registradores que serão utilizados
+	 
+
+    addi $sp, $sp, -8
+    sw $ra, 4($sp)    
+    sw $a0, 0($sp)          # n
+
+
+    slti $t0,$a0, 1         # compara se  n < 1
+    beq $t0, $zero, L1      # se  n >= 1 vai para L1
+
+    li $v0, 1		    # return 1
+    addi $sp, $sp, 8        # retira 2 itens da pilha
+    jr $ra
+   
+
+L1:
+    addi $a0, $a0, -1       # n = n - 1
+    jal FACT                # chama fact com (n - 1)
+
+
+    lw $a0, 0($sp)          #restaura n
+    lw $ra, 4($sp)          #restaura ra
+    addi $sp, $sp, 8        #ajusta stack para retirar 2 itens
+
+    mul $v0, $a0, $v0       # retorna n * fact(n - 1)
+
+    jr $ra                  #retorna para quem chamou, mas não sabemos que chamou
+
+
+SAIR:
+
+    move $s0, $v0 	   #armazena o valor que vai ser impresso em $v0	   
+    
+    la, $a0, MSG	   #(load address), carrega o endereço de MSG dentro de $a0
+    li $v0, 4		   #faz a chamada nº 4 que é para imprimir uma string		
+    syscall		   #chama o sistema
+	
+    move $a0, $v0 	   #armazena o valor que vai ser impresso em $v0	   
+    li $v0, 1		   #faz a chamada do sistema para imprimir um inteiro	
+    syscall		   #chama o sistema
+
+    li $v0, 10		   #faz a chamada do sistema para sair do programa
+    syscall		   #chama o sistema
+
+		 	
